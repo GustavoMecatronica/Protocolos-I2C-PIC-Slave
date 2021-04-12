@@ -1,0 +1,35 @@
+[PROJECT]
+Target=Slave_I2C.hex
+Processor_Text=PIC16F887
+CCSVersion=5.091
+Compiler=PCM
+[Target Data]
+FileList=Slave_I2C.c
+[Slave_I2C.c]
+Type=4
+[mru-list]
+1=Slave_I2C.c
+
+[defines]
+buildcount=2
+
+[ProjectLog]
+Days=1
+D1=11-04-2021
+D1_L=4
+D1_L1=[72535]Stopped Editing.
+D1_L2=[74199]Started Editing.
+D1_L3=[74505]Stopped Editing.
+TotalEdit=16
+TotalDebug=0
+D1_E=16
+D1_D=0
+D1_L4=[78429]Project Closed.
+
+[Opened Files]
+1=Slave_I2C.c
+t1=1
+Count=1
+[Units]
+Count=1
+1=Slave_I2C (main)

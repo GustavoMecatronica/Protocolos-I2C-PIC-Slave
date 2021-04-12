@@ -1,0 +1,305 @@
+CCS PCM C Compiler, Version 5.091, 13314               11-abr.-21 21:46
+
+               Filename:   C:\Users\Gustavo\Documents\UNIVERSIDAD\5TO CUATRIMESTRE\MICROCONTROLADORES\Slave_I2C\Slave_I2C.lst
+
+               ROM used:   201 words (2%)
+                           Largest free fragment is 2048
+               RAM used:   17 (5%) at main() level
+                           19 (5%) worst case
+               Stack used: 1 locations (0 in main + 1 for interrupts)
+               Stack size: 8
+
+0000:  MOVLW  00
+0001:  MOVWF  0A
+0002:  GOTO   065
+0003:  NOP
+0004:  MOVWF  7F
+0005:  SWAPF  03,W
+0006:  CLRF   03
+0007:  MOVWF  21
+0008:  MOVF   0A,W
+0009:  MOVWF  20
+000A:  CLRF   0A
+000B:  MOVF   04,W
+000C:  MOVWF  22
+000D:  MOVF   77,W
+000E:  MOVWF  23
+000F:  MOVF   78,W
+0010:  MOVWF  24
+0011:  MOVF   79,W
+0012:  MOVWF  25
+0013:  MOVF   7A,W
+0014:  MOVWF  26
+0015:  BCF    03.7
+0016:  BCF    03.5
+0017:  MOVLW  8C
+0018:  MOVWF  04
+0019:  BTFSS  00.3
+001A:  GOTO   01D
+001B:  BTFSC  0C.3
+001C:  GOTO   02E
+001D:  MOVF   22,W
+001E:  MOVWF  04
+001F:  MOVF   23,W
+0020:  MOVWF  77
+0021:  MOVF   24,W
+0022:  MOVWF  78
+0023:  MOVF   25,W
+0024:  MOVWF  79
+0025:  MOVF   26,W
+0026:  MOVWF  7A
+0027:  MOVF   20,W
+0028:  MOVWF  0A
+0029:  SWAPF  21,W
+002A:  MOVWF  03
+002B:  SWAPF  7F,F
+002C:  SWAPF  7F,W
+002D:  RETFIE
+002E:  BCF    0A.3
+002F:  BCF    0A.4
+0030:  GOTO   031
+.................... ////////////////////////////////////////////////////////////////////////////////
+.................... //                    COMUNICACIÓN I2C EN TRE DOS PIC                         //
+.................... //                                                                            //
+.................... //                      Aplicación para PIC ESCLAVO                           //
+.................... //                                                                            //
+.................... //                                                                            //
+.................... //                          Desarrollo de JCesarMD                            //
+.................... //            Adaptado por Gustavo Trejo para integrar con myRio 1900         // 
+.................... ////////////////////////////////////////////////////////////////////////////////
+.................... 
+.................... #include <16F887.h>
+.................... //////////// Standard Header file for the PIC16F887 device ////////////////
+.................... ///////////////////////////////////////////////////////////////////////////
+.................... ////        (C) Copyright 1996, 2014 Custom Computer Services          ////
+.................... //// This source code may only be used by licensed users of the CCS C  ////
+.................... //// compiler.  This source code may only be distributed to other      ////
+.................... //// licensed users of the CCS C compiler.  No other use, reproduction ////
+.................... //// or distribution is permitted without written permission.          ////
+.................... //// Derivative programs created using this software in object code    ////
+.................... //// form are not restricted in any way.                               ////
+.................... ///////////////////////////////////////////////////////////////////////////
+.................... #device PIC16F887
+.................... 
+.................... #list
+.................... 
+.................... #FUSES XT, NOWDT, BROWNOUT, NOLVP, MCLR, PUT
+.................... #use delay(internal=4000000)
+*
+0050:  MOVLW  2C
+0051:  MOVWF  04
+0052:  BCF    03.7
+0053:  MOVF   00,W
+0054:  BTFSC  03.2
+0055:  GOTO   064
+0056:  MOVLW  01
+0057:  MOVWF  78
+0058:  CLRF   77
+0059:  DECFSZ 77,F
+005A:  GOTO   059
+005B:  DECFSZ 78,F
+005C:  GOTO   058
+005D:  MOVLW  4A
+005E:  MOVWF  77
+005F:  DECFSZ 77,F
+0060:  GOTO   05F
+0061:  GOTO   062
+0062:  DECFSZ 00,F
+0063:  GOTO   056
+0064:  RETURN
+.................... #use standard_io(c)
+.................... #use i2c(SLAVE, SLOW, SDA=PIN_C4, SCL=PIN_C3, force_hw, address=0x10,)
+.................... #byte PORTD=8 // identificador del puerto D
+.................... 
+.................... //definicion de salidas para driver A4988
+.................... #DEFINE enable PORTD,0
+.................... #DEFINE dir    PORTD,1
+.................... #DEFINE step   PORTD,2
+.................... int incoming;
+.................... /*********** Interrupciones del modulo SSP de comunicaciones ******************/
+.................... 
+.................... #INT_SSP                 // Arquitectura de interrupción del modulo SSP
+.................... void SSP_isr()        
+.................... {
+.................... int state;
+.................... 
+.................... state = i2c_isr_state();    // Asignación del estado del bus I2C
+*
+0031:  BSF    03.5
+0032:  BTFSC  14.5
+0033:  GOTO   03C
+0034:  BCF    03.5
+0035:  CLRF   29
+0036:  BSF    03.5
+0037:  BTFSS  14.2
+0038:  GOTO   03C
+0039:  BCF    03.5
+003A:  BSF    29.7
+003B:  BSF    03.5
+003C:  BCF    03.5
+003D:  MOVF   29,W
+003E:  INCF   29,F
+003F:  MOVWF  2D
+.................... 
+.................... if(state < 0x80)     // El maestro está enviando datos
+0040:  MOVF   2D,W
+0041:  SUBLW  7F
+0042:  BTFSS  03.0
+0043:  GOTO   04C
+....................   {
+....................   
+....................    incoming = i2c_read();   // El esclavo lee los datos recibidos
+0044:  BCF    14.6
+0045:  BSF    03.5
+0046:  BTFSS  14.0
+0047:  GOTO   046
+0048:  BCF    03.5
+0049:  MOVF   13,W
+004A:  BSF    14.4
+004B:  MOVWF  28
+....................       
+....................   }
+.................... 
+004C:  BCF    0C.3
+004D:  BCF    0A.3
+004E:  BCF    0A.4
+004F:  GOTO   01D
+.................... }
+.................... /******************************************************************************/
+.................... 
+.................... /*************************** FUNCIÓN PRINCIPAL ********************************/
+.................... 
+.................... void main() {
+*
+0065:  MOVF   03,W
+0066:  ANDLW  1F
+0067:  MOVWF  03
+0068:  MOVLW  61
+0069:  BSF    03.5
+006A:  MOVWF  0F
+006B:  CLRF   10
+006C:  MOVF   0F,W
+006D:  MOVLW  FF
+006E:  BCF    03.5
+006F:  MOVWF  27
+0070:  BSF    27.3
+0071:  MOVF   27,W
+0072:  BSF    03.5
+0073:  MOVWF  07
+0074:  BCF    03.5
+0075:  BSF    27.4
+0076:  MOVF   27,W
+0077:  BSF    03.5
+0078:  MOVWF  07
+0079:  MOVLW  10
+007A:  MOVWF  13
+007B:  MOVLW  09
+007C:  BCF    03.5
+007D:  MOVWF  14
+007E:  MOVLW  FF
+007F:  BSF    03.5
+0080:  MOVWF  13
+0081:  MOVLW  36
+0082:  BCF    03.5
+0083:  MOVWF  14
+0084:  BSF    03.5
+0085:  BSF    11.0
+0086:  BSF    11.7
+0087:  MOVLW  03
+0088:  BCF    03.5
+0089:  MOVWF  29
+008A:  BSF    03.5
+008B:  BSF    03.6
+008C:  MOVF   09,W
+008D:  ANDLW  C0
+008E:  MOVWF  09
+008F:  BCF    03.6
+0090:  BCF    1F.4
+0091:  BCF    1F.5
+0092:  MOVLW  00
+0093:  BSF    03.6
+0094:  MOVWF  08
+0095:  BCF    03.5
+0096:  CLRF   07
+0097:  CLRF   08
+0098:  CLRF   09
+0099:  BCF    03.7
+.................... 
+....................    enable_interrupts(INT_SSP);   // Activación de los modulos de interrupción
+009A:  BSF    03.5
+009B:  BCF    03.6
+009C:  BSF    0C.3
+....................    enable_interrupts(GLOBAL);
+009D:  MOVLW  C0
+009E:  BCF    03.5
+009F:  IORWF  0B,F
+....................    set_tris_d(0);
+00A0:  MOVLW  00
+00A1:  BSF    03.5
+00A2:  MOVWF  08
+....................    setup_oscillator(OSC_4MHZ);
+00A3:  MOVLW  61
+00A4:  MOVWF  0F
+00A5:  CLRF   10
+00A6:  MOVF   0F,W
+....................   
+....................    delay_ms(100);                 // Espera 100ms
+00A7:  MOVLW  64
+00A8:  BCF    03.5
+00A9:  MOVWF  2C
+00AA:  CALL   050
+....................    portd=0;  
+00AB:  CLRF   08
+.................... 
+....................   while (TRUE) {
+....................  
+....................    bit_set(enable);
+00AC:  BSF    08.0
+....................    if(incoming==1){
+00AD:  DECFSZ 28,W
+00AE:  GOTO   0C7
+....................       for(int16 i=0; i<=200;i++){
+00AF:  CLRF   2B
+00B0:  CLRF   2A
+00B1:  MOVF   2B,F
+00B2:  BTFSS  03.2
+00B3:  GOTO   0C6
+00B4:  MOVF   2A,W
+00B5:  SUBLW  C8
+00B6:  BTFSS  03.0
+00B7:  GOTO   0C6
+....................          bit_clear(enable);
+00B8:  BCF    08.0
+....................          bit_set(dir);
+00B9:  BSF    08.1
+....................          bit_set(step);
+00BA:  BSF    08.2
+....................          delay_ms(3);
+00BB:  MOVLW  03
+00BC:  MOVWF  2C
+00BD:  CALL   050
+....................          bit_clear(step);
+00BE:  BCF    08.2
+....................          delay_ms(3);
+00BF:  MOVLW  03
+00C0:  MOVWF  2C
+00C1:  CALL   050
+00C2:  INCF   2A,F
+00C3:  BTFSC  03.2
+00C4:  INCF   2B,F
+00C5:  GOTO   0B1
+....................       }
+....................       incoming=0;
+00C6:  CLRF   28
+....................    } 
+00C7:  GOTO   0AC
+.................... /******************************************************************************/      
+....................    }
+.................... }
+.................... 
+00C8:  SLEEP
+.................... /******************************************************************************/
+
+Configuration Fuses:
+   Word  1: 2FE4   INTRC_IO NOWDT PUT MCLR NOPROTECT NOCPD BROWNOUT IESO FCMEN NOLVP NODEBUG
+   Word  2: 3FFF   BORV40 NOWRT

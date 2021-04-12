@@ -1,0 +1,6 @@
+ÀÄSlave_I2C_2
+   ÃÄMAIN  0/81  Ram=0
+   ³  ÃÄ@cinit1  (Inline)  Ram=0
+   ³  ÃÄ@cinit2  (Inline)  Ram=0
+   ³  ÀÄ@delay_ms1  0/23  Ram=1
+   ÀÄSSP_isr  0/31  Ram=1
